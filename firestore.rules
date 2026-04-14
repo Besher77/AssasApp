@@ -1,0 +1,176 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('userType', '') == 'admin';
+    }
+
+    // Engineers cannot set payoutStatus to approved/rejected (admin / console only).
+    function payoutStatusAllowedOnWrite() {
+      let newStatus = request.resource.data.get('payoutStatus', '');
+      let oldStatus = resource.data.get('payoutStatus', '');
+      return !(newStatus == 'approved' || newStatus == 'rejected') || newStatus == oldStatus;
+    }
+
+    function payoutStatusAllowedOnCreate() {
+      let s = request.resource.data.get('payoutStatus', '');
+      return !(s == 'approved' || s == 'rejected');
+    }
+
+    // Self-signup engineers must start as pending; only admin can set active/rejected.
+    function engineerRegAllowedOnNonAdminCreate() {
+      return request.resource.data.get('userType', '') != 'engineer' ||
+        request.resource.data.get('engineerRegistrationStatus', '') == 'pending';
+    }
+
+    function engineerRegUnchangedOnNonAdminUpdate() {
+      return request.resource.data.get('engineerRegistrationStatus', '') == resource.data.get('engineerRegistrationStatus', '') &&
+        request.resource.data.get('engineerRegistrationNote', '') == resource.data.get('engineerRegistrationNote', '');
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth != null && (
+        (request.auth.uid == userId && payoutStatusAllowedOnCreate() && engineerRegAllowedOnNonAdminCreate()) ||
+        isAdmin()
+      );
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId && payoutStatusAllowedOnWrite() && engineerRegUnchangedOnNonAdminUpdate()) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+    match /projects/{projectId} {
+      allow create: if request.auth != null && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+    match /portfolio_items/{itemId} {
+      allow create: if request.auth != null && request.resource.data.engineerId == request.auth.uid;
+      allow read: if true;
+      allow update, delete: if request.auth != null && resource.data.engineerId == request.auth.uid;
+    }
+    match /offers/{offerId} {
+      allow create: if request.auth != null && request.resource.data.engineerId == request.auth.uid;
+      allow read: if request.auth != null;
+      allow update: if request.auth != null && (
+        resource.data.engineerId == request.auth.uid ||
+        get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.userId == request.auth.uid
+      );
+      allow delete: if false;
+    }
+    match /notifications/{notifId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+    match /reviews/{reviewId} {
+      allow create: if request.auth != null && request.resource.data.reviewerId == request.auth.uid;
+      allow read: if true;
+      allow update, delete: if request.auth != null && resource.data.reviewerId == request.auth.uid;
+    }
+    match /wallets/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /transactions/{txId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin()
+        && resource.data.type == 'withdraw'
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'completed'
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.type == 'withdraw';
+      allow delete: if false;
+    }
+    match /payment_requests/{requestId} {
+      allow create: if request.auth != null && request.resource.data.fromUserId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.fromUserId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /withdrawal_requests/{reqId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'engineer'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 100
+        && request.resource.data.status == 'pending'
+        && request.resource.data.currency == 'SAR';
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      // Admin may correct status on processed rows (wallet is not adjusted — use only for record fixes).
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    match /project_confirmations/{confId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null;
+      allow update, delete: if false;
+    }
+    match /project_cancel_requests/{reqId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null;
+      allow delete: if false;
+    }
+    match /card_payment_confirmations/{confId} {
+      allow create: if request.auth != null && request.resource.data.fromUserId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.fromUserId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /saved_cards/{userId}/cards/{cardId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    function projectAcceptedEngineerId(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data.get('acceptedEngineerId', '');
+    }
+
+    function messageReceiverStatusOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    }
+
+    match /messages/{msgId} {
+      // Standard project chat, or admin support thread (admin ↔ accepted engineer only).
+      allow create: if request.auth != null
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.projectId is string
+        && (
+          request.resource.data.get('adminSupport', false) != true
+          || (
+            request.resource.data.adminSupport == true
+            && request.resource.data.receiverId is string
+            && (
+              (
+                isAdmin()
+                && projectAcceptedEngineerId(request.resource.data.projectId) == request.resource.data.receiverId
+              )
+              || (
+                projectAcceptedEngineerId(request.resource.data.projectId) == request.auth.uid
+                && get(/databases/$(database)/documents/users/$(request.resource.data.receiverId)).data.get('userType', '') == 'admin'
+              )
+            )
+          )
+        );
+      allow read: if request.auth != null;
+      allow update: if request.auth != null && (
+        (resource.data.receiverId == request.auth.uid && messageReceiverStatusOnly())
+        || (
+          isAdmin()
+          && request.resource.data.senderId == resource.data.senderId
+          && request.resource.data.projectId == resource.data.projectId
+        )
+      );
+      allow delete: if isAdmin();
+    }
+    match /wallets/escrow {
+      allow read, write: if false;
+    }
+    match /wallets/platform {
+      allow read, write: if false;
+    }
+  }
+}
