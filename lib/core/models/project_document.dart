@@ -87,8 +87,8 @@ class ProjectDocument {
       description: data['description'] as String? ?? '',
       imageUrls: urls is List ? urls.map((e) => e.toString()).toList() : [],
       fileAttachments: files is List
-          ? (files as List)
-              .map((e) => e is Map ? ProjectFileAttachment.fromMap(Map<String, dynamic>.from(e as Map)) : null)
+          ? files
+              .map((e) => e is Map ? ProjectFileAttachment.fromMap(Map<String, dynamic>.from(e)) : null)
               .whereType<ProjectFileAttachment>()
               .where((a) => a.url.isNotEmpty)
               .toList()

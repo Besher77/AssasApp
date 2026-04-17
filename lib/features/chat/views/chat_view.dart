@@ -313,13 +313,13 @@ class _ProjectSummaryCard extends StatelessWidget {
                         width: 64,
                         height: 64,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
+                        placeholder: (context, url) => Container(
                           width: 64,
                           height: 64,
                           color: AppColors.primaryBackground,
                           child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                         ),
-                        errorWidget: (_, __, ___) => _buildPlaceholder(),
+                        errorWidget: (context, url, error) => _buildPlaceholder(),
                       )
                     : _buildPlaceholder(),
               ),

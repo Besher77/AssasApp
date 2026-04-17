@@ -195,7 +195,7 @@ class _LogoWithShimmer extends StatelessWidget {
             Image.asset(
               'assets/images/app_logo.png',
               fit: BoxFit.cover,
-              errorBuilder: (context, _error, _stackTrace) => _FallbackLogo(),
+              errorBuilder: (context, error, stackTrace) => _FallbackLogo(),
             ),
             // Subtle shimmer overlay
             Positioned.fill(

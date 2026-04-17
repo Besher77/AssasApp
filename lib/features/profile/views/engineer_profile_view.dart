@@ -213,7 +213,7 @@ class EngineerProfileView extends GetView<EngineerProfileController> {
               icon: Icons.star_outline_rounded,
               isSelected: controller.selectedTabIndex.value == 2,
               onTap: () => controller.selectedTabIndex.value = 2,
-              badge: controller.reviews.length > 0 ? '${controller.reviews.length}' : null,
+              badge: controller.reviews.isNotEmpty ? '${controller.reviews.length}' : null,
             ),
           ],
         ),

@@ -57,8 +57,8 @@ class OfferDocument {
       proposedDuration: data['proposedDuration'] as String?,
       imageUrls: urls is List ? urls.map((e) => e.toString()).toList() : [],
       fileAttachments: files is List
-          ? (files as List)
-              .map((e) => e is Map ? OfferFileAttachment.fromMap(Map<String, dynamic>.from(e as Map)) : null)
+          ? files
+              .map((e) => e is Map ? OfferFileAttachment.fromMap(Map<String, dynamic>.from(e)) : null)
               .whereType<OfferFileAttachment>()
               .where((a) => a.url.isNotEmpty)
               .toList()

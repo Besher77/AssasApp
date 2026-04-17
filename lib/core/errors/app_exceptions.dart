@@ -15,5 +15,5 @@ class AuthException extends AppException {
 
 /// Network exception
 class NetworkException extends AppException {
-  NetworkException([String message = 'Network error']) : super(message);
+  NetworkException([super.message = 'Network error']);
 }

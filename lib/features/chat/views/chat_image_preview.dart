@@ -69,10 +69,10 @@ class _ChatImagePreviewState extends State<ChatImagePreview> {
                   child: CachedNetworkImage(
                     imageUrl: widget.images[index],
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => Center(
+                    placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(color: AppColors.primaryAccent),
                     ),
-                    errorWidget: (_, __, ___) => const Icon(
+                    errorWidget: (context, url, error) => const Icon(
                       Icons.broken_image,
                       size: 64,
                       color: Colors.white54,

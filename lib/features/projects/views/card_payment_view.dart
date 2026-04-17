@@ -20,11 +20,23 @@ CardCompany _getCardCompany(String number) {
   final digits = number.replaceAll(RegExp(r'[^0-9]'), '');
   if (digits.isEmpty) return CardCompany.visa;
   if (digits.startsWith('34') || digits.startsWith('37')) return CardCompany.amex;
-  if (digits.startsWith('4201') || digits.startsWith('5043') || digits.startsWith('5297') ||
-      digits.startsWith('5859') || digits.startsWith('5889') || digits.startsWith('6051') ||
-      digits.startsWith('50') || digits.startsWith('60')) return CardCompany.mada;
-  if (digits.startsWith('51') || digits.startsWith('52') || digits.startsWith('53') ||
-      digits.startsWith('54') || digits.startsWith('55')) return CardCompany.master;
+  if (digits.startsWith('4201') ||
+      digits.startsWith('5043') ||
+      digits.startsWith('5297') ||
+      digits.startsWith('5859') ||
+      digits.startsWith('5889') ||
+      digits.startsWith('6051') ||
+      digits.startsWith('50') ||
+      digits.startsWith('60')) {
+    return CardCompany.mada;
+  }
+  if (digits.startsWith('51') ||
+      digits.startsWith('52') ||
+      digits.startsWith('53') ||
+      digits.startsWith('54') ||
+      digits.startsWith('55')) {
+    return CardCompany.master;
+  }
   if (digits.length >= 4) {
     final n = int.tryParse(digits.substring(0, 4));
     if (n != null && n >= 2221 && n <= 2720) return CardCompany.master;
