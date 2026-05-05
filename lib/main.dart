@@ -30,45 +30,59 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // ✅ Solution: Move everything inside runZonedGuarded
+  runZonedGuarded(() async {
+    // ✅ Now everything happens in the same zone
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ 1) تهيئة Firebase أول شيء
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+    // 1) Initialize Firebase first
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  // ✅ 2) بعد التهيئة
-  FirebaseMessaging.onBackgroundMessage(
-    _firebaseMessagingBackgroundHandler,
-  );
+    // 2) Register FCM background handler
+    FirebaseMessaging.onBackgroundMessage(
+      _firebaseMessagingBackgroundHandler,
+    );
 
-  // ✅ 3) Crashlytics بعد Firebase
-  FlutterError.onError =
-      FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // 3) Setup Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-  // ✅ 4) باقي الخدمات
-  await Get.putAsync(() => FirebaseService.init());
+    // Optional: Enable error zone debugging (helpful during development)
+    // BindingBase.debugZoneErrorsAreFatal = true;
 
-  try {
-    await Get.putAsync(() => FcmService.init());
-  } catch (e) {
-    if (kDebugMode) debugPrint('FCM init error: $e');
-  }
+    // Setup global error handler for platform errors
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
 
-  Get.put(FirestoreService());
-  Get.put(StorageService());
-  Get.put(NotificationService());
+    // 4) Initialize remaining services
+    await Get.putAsync(() => FirebaseService.init());
 
-  final settings = await Get.putAsync(() => SettingsService().init());
-  await Get.putAsync(() => AuthService().init());
+    try {
+      await Get.putAsync(() => FcmService.init());
+    } catch (e) {
+      if (kDebugMode) debugPrint('FCM init error: $e');
+    }
 
-  Get.updateLocale(Locale(settings.locale.value));
+    Get.put(FirestoreService());
+    Get.put(StorageService());
+    Get.put(NotificationService());
 
+    final settings = await Get.putAsync(() => SettingsService().init());
+    await Get.putAsync(() => AuthService().init());
 
-  runZonedGuarded(() {
+    Get.updateLocale(Locale(settings.locale.value));
+
+    // 5) Run the app
     runApp(const AsasApp());
   }, (error, stack) {
+    // Catch any unexpected errors
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    if (kDebugMode) {
+      debugPrint('Uncaught error in zone: $error');
+    }
   });
 }
 
@@ -94,10 +108,13 @@ class _AsasAppState extends State<AsasApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!Get.isRegistered<AuthService>() || !Get.isRegistered<FirestoreService>()) return;
+    if (!Get.isRegistered<AuthService>() ||
+        !Get.isRegistered<FirestoreService>()) return;
+
     final auth = Get.find<AuthService>();
     final uid = auth.currentUserId;
     if (uid == null) return;
+
     final firestore = Get.find<FirestoreService>();
     switch (state) {
       case AppLifecycleState.resumed:
@@ -117,10 +134,9 @@ class _AsasAppState extends State<AsasApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final settings = Get.find<SettingsService>();
     return Obx(
-      () => SafeArea(
+          () => SafeArea(
         child: GetMaterialApp(
           title: 'أساس',
-
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
