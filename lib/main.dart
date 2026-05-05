@@ -29,31 +29,43 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Register FCM background handler first (required before runApp)
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // ✅ 1) تهيئة Firebase أول شيء
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  // ✅ 2) بعد التهيئة
+  FirebaseMessaging.onBackgroundMessage(
+    _firebaseMessagingBackgroundHandler,
+  );
+
+  // ✅ 3) Crashlytics بعد Firebase
+  FlutterError.onError =
+      FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  // ✅ 4) باقي الخدمات
   await Get.putAsync(() => FirebaseService.init());
-  // if (kDebugMode) {
-  //   try {
-  //     await FirebaseAppCheck.instance.activate(
-  //       androidProvider: AndroidProvider.debug,
-  //       appleProvider: AppleProvider.debug,
-  //     );
-  //   } catch (_) {}
-  // }
+
   try {
     await Get.putAsync(() => FcmService.init());
   } catch (e) {
     if (kDebugMode) debugPrint('FCM init error: $e');
   }
+
   Get.put(FirestoreService());
   Get.put(StorageService());
   Get.put(NotificationService());
+
   final settings = await Get.putAsync(() => SettingsService().init());
   await Get.putAsync(() => AuthService().init());
+
   Get.updateLocale(Locale(settings.locale.value));
 
-  runApp(const AsasApp());
+  runZonedGuarded(() {
+    runApp(const AsasApp());
+  }, (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  });
 }
 
 class AsasApp extends StatefulWidget {

@@ -74,13 +74,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyAeqPQKdCHPp4FJvurXGZwPeTpKqeKMwNE',
-    appId: '1:268171989644:ios:58d8c261ff5982234be1a9',
+    appId: '1:268171989644:ios:04e76544648f6f654be1a9',
     messagingSenderId: '268171989644',
     projectId: 'face-70344',
     databaseURL: 'https://face-70344-default-rtdb.firebaseio.com',
     storageBucket: 'face-70344.firebasestorage.app',
     androidClientId: '268171989644-1qle0a7nfjlrb64d4hh89nb9t2vb2u0o.apps.googleusercontent.com',
-    iosClientId: '268171989644-nktjekg690p68395u2v7v0gdvuk2sa9s.apps.googleusercontent.com',
+    iosClientId: '268171989644-26qfl981nt1mdj4nn68m2cm1hptps0kq.apps.googleusercontent.com',
     iosBundleId: 'com.asas.engineers',
   );
 
@@ -94,4 +94,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'face-70344.firebasestorage.app',
     measurementId: 'G-ZWE17Y474M',
   );
+
 }
