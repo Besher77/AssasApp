@@ -120,6 +120,7 @@ class _AsasAppState extends State<AsasApp> with WidgetsBindingObserver {
       () => SafeArea(
         child: GetMaterialApp(
           title: 'أساس',
+
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
