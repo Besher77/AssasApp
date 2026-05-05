@@ -29,13 +29,54 @@
     <key>UIMainStoryboardFile</key>
     <string>Main</string>
 
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.268171989644-26qfl981nt1mdj4nn68m2cm1hptps0kq</string>
+            </array>
+        </dict>
+    </array>
+
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>http</string>
+        <string>https</string>
+        <string>tel</string>
+        <string>mailto</string>
+        <string>sms</string>
+    </array>
+
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
     <!-- صور المشاريع -->
     <key>NSPhotoLibraryUsageDescription</key>
     <string>يتيح لك التطبيق رفع صور المشاريع الهندسية والأعمال التي تقوم بها أو تحتاجها كعميل. نحتاج الوصول إلى مكتبة الصور لاختيار وتحميل الصور المتعلقة بالمشاريع، مثل صور المواقع، الأعمال المنجزة، والمستندات الداعمة.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>يتيح لك التطبيق حفظ صور المشاريع والمخططات إلى مكتبة الصور الخاصة بك.</string>
 
     <!-- الكاميرا (موصى به لأنك تطلب صور المشاريع) -->
     <key>NSCameraUsageDescription</key>
     <string>يتيح لك التطبيق التقاط صور المشاريع والأعمال مباشرة باستخدام الكاميرا لرفعها ومشاركتها على التطبيق.</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+    <string>يتيح لك التطبيق تسجيل الرسائل الصوتية في المحادثات ومشاركة الفيديو للمشاريع.</string>
 
     <key>UISupportedInterfaceOrientations</key>
     <array>
@@ -43,7 +84,6 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -51,13 +91,9 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
-
-    <key>NSMicrophoneUsageDescription</key>
-    <string>This app needs microphone access to record voice messages in chat.</string>
 </dict>
 </plist>

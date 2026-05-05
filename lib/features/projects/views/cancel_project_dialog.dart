@@ -53,13 +53,17 @@ class _CancelProjectDialogState extends State<CancelProjectDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            ...cancelCauseTemplates.map((t) => RadioListTile<String>(
+            RadioGroup<String>(
+              groupValue: _selectedCauseId,
+              onChanged: (v) => setState(() => _selectedCauseId = v),
+              child: Column(
+                children: cancelCauseTemplates.map((t) => RadioListTile<String>(
                   title: Text(t.name, style: TextStyle(color: AppColors.textPrimary)),
                   value: t.id,
-                  groupValue: _selectedCauseId,
-                  onChanged: (v) => setState(() => _selectedCauseId = v),
                   activeColor: AppColors.primaryAccent,
-                )),
+                )).toList(),
+              ),
+            ),
             const SizedBox(height: 12),
             AsasTextField(
               controller: _causeTextController,

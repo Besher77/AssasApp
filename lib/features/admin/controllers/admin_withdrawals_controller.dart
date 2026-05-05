@@ -295,12 +295,7 @@ class AdminWithdrawalsController extends GetxController {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    RadioListTile<String>(
-                      title: Text(
-                        'withdrawal_status_transferred'.tr,
-                        style: TextStyle(color: AppColors.textPrimary),
-                      ),
-                      value: 'transferred',
+                    RadioGroup<String>(
                       groupValue: picked,
                       onChanged: (v) {
                         if (v != null) {
@@ -308,20 +303,24 @@ class AdminWithdrawalsController extends GetxController {
                           setSt(() {});
                         }
                       },
-                    ),
-                    RadioListTile<String>(
-                      title: Text(
-                        'withdrawal_status_rejected'.tr,
-                        style: TextStyle(color: AppColors.textPrimary),
+                      child: Column(
+                        children: [
+                          RadioListTile<String>(
+                            title: Text(
+                              'withdrawal_status_transferred'.tr,
+                              style: TextStyle(color: AppColors.textPrimary),
+                            ),
+                            value: 'transferred',
+                          ),
+                          RadioListTile<String>(
+                            title: Text(
+                              'withdrawal_status_rejected'.tr,
+                              style: TextStyle(color: AppColors.textPrimary),
+                            ),
+                            value: 'rejected',
+                          ),
+                        ],
                       ),
-                      value: 'rejected',
-                      groupValue: picked,
-                      onChanged: (v) {
-                        if (v != null) {
-                          picked = v;
-                          setSt(() {});
-                        }
-                      },
                     ),
                     TextField(
                       controller: noteCtrl,

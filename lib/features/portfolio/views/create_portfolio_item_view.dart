@@ -143,7 +143,7 @@ class CreatePortfolioItemView extends GetView<CreatePortfolioItemController> {
     required IconData icon,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: AppColors.textSecondary),

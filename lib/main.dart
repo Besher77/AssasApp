@@ -109,11 +109,15 @@ class _AsasAppState extends State<AsasApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!Get.isRegistered<AuthService>() ||
-        !Get.isRegistered<FirestoreService>()) return;
+        !Get.isRegistered<FirestoreService>()) {
+      return;
+    }
 
     final auth = Get.find<AuthService>();
     final uid = auth.currentUserId;
-    if (uid == null) return;
+    if (uid == null) {
+      return;
+    }
 
     final firestore = Get.find<FirestoreService>();
     switch (state) {

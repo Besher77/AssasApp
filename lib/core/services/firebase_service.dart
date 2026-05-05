@@ -6,12 +6,14 @@ import 'package:get/get.dart';
 class FirebaseService extends GetxService {
   static Future<FirebaseService> init() async {
     try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
       return FirebaseService();
     } catch (e) {
-      Get.snackbar('Firebase Error', 'Failed to initialize: $e');
+      // Avoid using Get.snackbar before runApp
       rethrow;
     }
   }
