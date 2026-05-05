@@ -1,6 +1,6 @@
 workflows:
-  ios-release:
-    name: iOS Release
+  ios-simulator:
+    name: iOS Simulator Build
     max_build_duration: 60
 
     triggering:
@@ -14,15 +14,17 @@ workflows:
       - name: Install dependencies
         script: flutter pub get
 
-      - name: Build IPA
-        script: flutter build ipa --release
+      - name: Build iOS Simulator
+        script: |
+          xcodebuild build \
+          -workspace ios/Runner.xcworkspace \
+          -scheme Runner \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          -configuration Debug \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
 
     artifacts:
-      - build/ios/ipa/*.ipa
-
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        beta_groups:
-          - Internal Testers
+      - /Users/builder/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/*.app
