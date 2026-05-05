@@ -7,5 +7,5 @@ class AssetsRes {
   AssetsRes._();
 
   static const String PROJECT_NAME = 'assas';
-  static const String PROJECT_VERSION = '1.0.0+3';
+  static const String PROJECT_VERSION = '1.0.0+4';
 }

@@ -1,6 +1,6 @@
 workflows:
-  ios-simulator:
-    name: iOS Simulator Build
+  ios-combined:
+    name: iOS IPA + Simulator Build
     max_build_duration: 60
 
     triggering:
@@ -10,10 +10,19 @@ workflows:
         - pattern: main
           include: true
 
+    environment:
+      flutter: stable
+      xcode: latest
+
     scripts:
       - name: Install dependencies
         script: flutter pub get
 
+      # 🔹 1. Build IPA (للأجهزة الحقيقية)
+      - name: Build IPA (Release)
+        script: flutter build ipa --release
+
+      # 🔹 2. Build Simulator (.app)
       - name: Build iOS Simulator
         script: |
           xcodebuild build \
@@ -26,5 +35,30 @@ workflows:
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO
 
+      # 🔹 3. ترتيب الملفات (تنظيم مهم 🔥)
+      - name: Prepare artifacts
+        script: |
+          mkdir -p output/simulator
+          mkdir -p output/ipa
+
+          # نسخ IPA
+          cp -r build/ios/ipa/*.ipa output/ipa/
+
+          # نسخ Simulator app
+          SIM_APP=$(find ~/Library/Developer/Xcode/DerivedData -name "*.app" -type d | head -n 1)
+          cp -r "$SIM_APP" output/simulator/
+
+          # ضغط Simulator
+          cd output/simulator
+          zip -r Runner.app.zip *.app
+
     artifacts:
-      - /Users/builder/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/*.app
+      - output/ipa/*.ipa
+      - output/simulator/*.zip
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
