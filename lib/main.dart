@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:assas/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,6 +18,7 @@ import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'l10n/app_translations.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 /// FCM background handler - must be top-level, registered before runApp
 @pragma('vm:entry-point')
@@ -60,6 +63,7 @@ void main() async {
   await Get.putAsync(() => AuthService().init());
 
   Get.updateLocale(Locale(settings.locale.value));
+
 
   runZonedGuarded(() {
     runApp(const AsasApp());
